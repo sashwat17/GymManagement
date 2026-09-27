@@ -1,8 +1,7 @@
-import React from 'react';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
-import { User, Mail, Phone, MapPin, Award, Calendar, Users, Star } from 'lucide-react';
+import { Mail, Phone, MapPin, Award, Calendar, Users, Star } from 'lucide-react';
 
 export function TrainerProfile() {
   return (

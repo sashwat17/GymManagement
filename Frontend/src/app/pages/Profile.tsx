@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card } from "../components/Card";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
@@ -13,13 +13,13 @@ import {
 } from "lucide-react";
 
 export function Profile() {
-  const [height, setHeight] = useState("175");
-  const [weight, setWeight] = useState("75");
-  const [age, setAge] = useState("28");
-  const [goal, setGoal] = useState("Build Muscle");
+  const [height, setHeight] = React.useState("175");
+  const [weight, setWeight] = React.useState("75");
+  const [age, setAge] = React.useState("28");
+  const [goal, setGoal] = React.useState("Build Muscle");
 
-  const [bmiHeight, setBmiHeight] = useState("");
-  const [bmiWeight, setBmiWeight] = useState("");
+  const [bmiHeight, setBmiHeight] = React.useState("");
+  const [bmiWeight, setBmiWeight] = React.useState("");
 
   // Auto-calculate BMI when both values are present
   const calculateBMI = (): number | null => {

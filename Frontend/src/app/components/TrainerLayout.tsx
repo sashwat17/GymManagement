@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { LayoutDashboard, Users, Dumbbell, ClipboardList, Bell, User, Menu, X, LogOut } from 'lucide-react';
 
@@ -20,7 +20,7 @@ const navItems: NavItem[] = [
 export function TrainerLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const handleNavClick = (path: string) => {
     navigate(path);

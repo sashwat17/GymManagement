@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
@@ -79,7 +79,7 @@ const workouts: Workout[] = [
 ];
 
 export function WorkoutManagement() {
-  const [selectedType, setSelectedType] = useState('All');
+  const [selectedType, setSelectedType] = React.useState('All');
 
   const filteredWorkouts = workouts.filter(
     (workout) => selectedType === 'All' || workout.type === selectedType
@@ -150,7 +150,7 @@ export function WorkoutManagement() {
             <div className="space-y-3 mb-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Difficulty:</span>
-                <Badge variant={getDifficultyColor(workout.difficulty) as any}>
+                <Badge variant={getDifficultyColor(workout.difficulty)}>
                   {workout.difficulty}
                 </Badge>
               </div>

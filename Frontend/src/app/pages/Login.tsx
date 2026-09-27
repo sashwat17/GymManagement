@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
@@ -6,10 +6,10 @@ import { Dumbbell } from 'lucide-react';
 
 export function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [userType, setUserType] = useState<'trainee' | 'trainer'>('trainee');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [rememberMe, setRememberMe] = React.useState(false);
+  const [userType, setUserType] = React.useState<'trainee' | 'trainer'>('trainee');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();

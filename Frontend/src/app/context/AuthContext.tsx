@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React from 'react';
 import { authService } from '../services/authService';
 import type { AuthUser, LoginPayload, RegisterPayload } from '../types/user';
 
@@ -10,15 +10,15 @@ interface AuthContextValue {
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AuthContext = React.createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = React.useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   // On first mount, if a token is already in storage, hydrate the session
   // by calling /auth/me instead of trusting stale localStorage user data.
-  useEffect(() => {
+  React.useEffect(() => {
     if (!authService.isAuthenticated()) {
       setIsLoading(false);
       return;
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext);
+  const ctx = React.useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within an <AuthProvider>');
   return ctx;
 }

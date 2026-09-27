@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Calendar, Clock, Dumbbell, User, AlertCircle } from 'lucide-react';
 
 export function WorkoutAssignment() {
-  const [selectedTrainee, setSelectedTrainee] = useState('');
-  const [selectedWorkout, setSelectedWorkout] = useState('');
-  const [difficulty, setDifficulty] = useState('Medium');
-  const [scheduledDate, setScheduledDate] = useState('');
-  const [scheduledTime, setScheduledTime] = useState('');
+  const [selectedTrainee, setSelectedTrainee] = React.useState('');
+  const [selectedWorkout, setSelectedWorkout] = React.useState('');
+  const [difficulty, setDifficulty] = React.useState('Medium');
+  const [scheduledDate, setScheduledDate] = React.useState('');
+  const [scheduledTime, setScheduledTime] = React.useState('');
 
   const trainees = [
     { id: '1', name: 'Alex Johnson', level: 'Intermediate' },

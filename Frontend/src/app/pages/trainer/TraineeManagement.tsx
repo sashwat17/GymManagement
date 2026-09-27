@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card } from "../../components/Card";
 import { Badge } from "../../components/Badge";
 import { Button } from "../../components/Button";
-import { Input } from "../../components/Input";
 import { ProgressBar } from "../../components/ProgressBar";
 import { Search, Eye, Dumbbell, TrendingUp, Calendar } from "lucide-react";
 
@@ -61,8 +60,8 @@ const trainees: Trainee[] = [
 ];
 
 export function TraineeManagement() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLevel, setSelectedLevel] = useState("All");
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [selectedLevel, setSelectedLevel] = React.useState("All");
 
   const filteredTrainees = trainees.filter((trainee) => {
     const matchesSearch = trainee.name
@@ -136,7 +135,7 @@ export function TraineeManagement() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-foreground">{trainee.name}</h3>
-                    <Badge variant={getLevelColor(trainee.level) as any}>
+                    <Badge variant={getLevelColor(trainee.level)}>
                       {trainee.level}
                     </Badge>
                   </div>

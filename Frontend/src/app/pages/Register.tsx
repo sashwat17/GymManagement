@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
@@ -6,9 +6,9 @@ import { Dumbbell, User, Mail, Lock, Phone, MapPin, Award } from 'lucide-react';
 
 export function Register() {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState<'trainee' | 'trainer'>('trainee');
+  const [userType, setUserType] = React.useState<'trainee' | 'trainer'>('trainee');
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = React.useState({
     fullName: '',
     email: '',
     password: '',

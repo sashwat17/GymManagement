@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { LayoutDashboard, Dumbbell, User, Bell, Menu, X, LogOut } from 'lucide-react';
 
@@ -18,7 +18,7 @@ const navItems: NavItem[] = [
 export function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const handleNavClick = (path: string) => {
     navigate(path);
@@ -39,7 +39,7 @@ export function Layout() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <aside className="hidden md:flex md:w-64 bg-sidebar border-r border-sidebar-border flex-col">
+      <aside className="hidden md:flex md:w-64 bg-sidebar border-r border-sidebar-border flex-col h-screen sticky top-0">
         <div className="p-6 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
             <div className="bg-primary/20 p-2 rounded-lg">
@@ -52,7 +52,7 @@ export function Layout() {
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => (
             <button
               key={item.path}

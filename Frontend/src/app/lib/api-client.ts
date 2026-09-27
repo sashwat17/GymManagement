@@ -39,7 +39,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (!res.ok) {
     const body = await parseBody(res);
     const message =
-      (body && typeof body === 'object' && 'message' in body && String((body as any).message)) ||
+      (body && typeof body === 'object' && 'message' in body && String((body).message)) ||
       res.statusText ||
       `Request failed with status ${res.status}`;
     throw new ApiError(res.status, message, body);
