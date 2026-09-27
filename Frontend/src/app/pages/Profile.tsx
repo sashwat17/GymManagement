@@ -11,15 +11,40 @@ import {
   Target,
   Calculator,
 } from "lucide-react";
+import { useTraineeProfile, useUpdateTraineeProfile } from "../hooks/useTrainees";
 
 export function Profile() {
-  const [height, setHeight] = React.useState("175");
-  const [weight, setWeight] = React.useState("75");
-  const [age, setAge] = React.useState("28");
-  const [goal, setGoal] = React.useState("Build Muscle");
+  const profileQuery = useTraineeProfile();
+  const updateProfile = useUpdateTraineeProfile();
+  const profile = profileQuery.data;
+  const [height, setHeight] = React.useState("");
+  const [weight, setWeight] = React.useState("");
+  const [age, setAge] = React.useState("");
+  const [goal, setGoal] = React.useState("");
 
   const [bmiHeight, setBmiHeight] = React.useState("");
   const [bmiWeight, setBmiWeight] = React.useState("");
+
+  React.useEffect(() => {
+    if (!profile) return;
+    setHeight(String(profile.height));
+    setWeight(String(profile.weight));
+    setAge(String(profile.age));
+    setGoal(profile.fitnessGoal);
+  }, [profile]);
+
+  const handleSave = async () => {
+    try {
+      await updateProfile.mutateAsync({
+        height: Number(height),
+        weight: Number(weight),
+        age: Number(age),
+        fitnessGoal: goal,
+      });
+    } catch {
+      // The mutation error is shown alongside the form.
+    }
+  };
 
   // Auto-calculate BMI when both values are present
   const calculateBMI = (): number | null => {
@@ -82,6 +107,9 @@ export function Profile() {
         </p>
       </div>
 
+      {profileQuery.isLoading && <p className="text-muted-foreground">Loading profile...</p>}
+      {profileQuery.isError && <p role="alert" className="text-destructive">{profileQuery.error.message}</p>}
+
       <div className="grid grid-cols-2 lg:grid-cols-2 gap-6">
         <Card className="lg:col-span-1">
           <div className="flex items-center gap-3 mb-6">
@@ -93,17 +121,17 @@ export function Profile() {
 
           <div className="flex items-center gap-6 mb-8 pb-6 border-b border-border">
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/30">
-              <span className="text-4xl">💪</span>
+              <span className="text-4xl">{profile?.avatarEmoji ?? "💪"}</span>
             </div>
             <div>
               <h2 className="text-foreground mb-1">
-                Shishir Bhandari
+                {profile?.fullName ?? "Trainee"}
               </h2>
               <p className="text-muted-foreground">
-                example@gmail.com
+                {profile?.email ?? ""}
               </p>
               <Badge variant="primary" className="mt-2">
-                Premium Member
+                {profile?.membershipTier ?? "Member"} Member
               </Badge>
             </div>
           </div>
@@ -168,9 +196,24 @@ export function Profile() {
           </div>
 
           <div className="mt-6 flex gap-3">
-            <Button variant="primary">Save Changes</Button>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="primary" onClick={handleSave} disabled={updateProfile.isPending || !profile}>
+              {updateProfile.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (!profile) return;
+                setHeight(String(profile.height));
+                setWeight(String(profile.weight));
+                setAge(String(profile.age));
+                setGoal(profile.fitnessGoal);
+              }}
+              disabled={!profile}
+            >
+              Cancel
+            </Button>
           </div>
+          {updateProfile.isError && <p role="alert" className="mt-3 text-sm text-destructive">{updateProfile.error.message}</p>}
         </Card>
 
         <Card>

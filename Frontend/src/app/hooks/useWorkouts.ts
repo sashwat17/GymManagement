@@ -27,10 +27,10 @@ export function useCreateWorkout() {
   });
 }
 
-export function useUpdateWorkout(id: string) {
+export function useUpdateWorkout() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: UpdateWorkoutPayload) => workoutService.update(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateWorkoutPayload }) => workoutService.update(id, payload),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts'] }),
   });
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { LayoutDashboard, Users, Dumbbell, ClipboardList, Bell, User, Menu, X, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface NavItem {
   icon: React.ReactNode;
@@ -20,6 +21,7 @@ const navItems: NavItem[] = [
 export function TrainerLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const handleNavClick = (path: string) => {
@@ -28,6 +30,7 @@ export function TrainerLayout() {
   };
 
   const handleLogout = () => {
+    logout();
     navigate('/login');
     setIsMobileMenuOpen(false);
   };

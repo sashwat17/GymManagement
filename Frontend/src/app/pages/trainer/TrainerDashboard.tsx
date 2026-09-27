@@ -3,18 +3,13 @@ import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Users, Activity, Calendar, TrendingUp, Award, Clock } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const weeklyData = [
-  { id: 1, day: 'Mon', sessions: 8, completion: 95 },
-  { id: 2, day: 'Tue', sessions: 6, completion: 88 },
-  { id: 3, day: 'Wed', sessions: 10, completion: 92 },
-  { id: 4, day: 'Thu', sessions: 7, completion: 85 },
-  { id: 5, day: 'Fri', sessions: 9, completion: 90 },
-  { id: 6, day: 'Sat', sessions: 5, completion: 100 },
-  { id: 7, day: 'Sun', sessions: 3, completion: 100 },
-];
+import { useTrainerDashboard } from '../../hooks/useTrainees';
 
 export function TrainerDashboard() {
+  const dashboardQuery = useTrainerDashboard();
+  const dashboard = dashboardQuery.data;
+  const weeklyData = dashboard?.weeklySessions ?? [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -32,13 +27,13 @@ export function TrainerDashboard() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Total Trainees</p>
-              <h2 className="text-foreground">42</h2>
+              <h2 className="text-foreground">{dashboard?.totalTrainees ?? '--'}</h2>
             </div>
             <Users className="w-6 h-6 text-primary" />
           </div>
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" />
-            <span className="text-sm text-primary">+5 this month</span>
+            <span className="text-sm text-primary">+{dashboard?.totalTraineesDeltaThisMonth ?? 0} this month</span>
           </div>
         </Card>
 
@@ -46,12 +41,12 @@ export function TrainerDashboard() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Active Trainees</p>
-              <h2 className="text-foreground">38</h2>
+              <h2 className="text-foreground">{dashboard?.activeTrainees ?? '--'}</h2>
             </div>
             <Activity className="w-6 h-6 text-secondary" />
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="success">90% Active Rate</Badge>
+            <Badge variant="success">{dashboard?.activeRate ?? 0}% Active Rate</Badge>
           </div>
         </Card>
 
@@ -59,7 +54,7 @@ export function TrainerDashboard() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Workouts Assigned</p>
-              <h2 className="text-foreground">156</h2>
+              <h2 className="text-foreground">{dashboard?.workoutsAssignedThisWeek ?? '--'}</h2>
             </div>
             <Calendar className="w-6 h-6 text-primary" />
           </div>
@@ -72,12 +67,12 @@ export function TrainerDashboard() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Today's Sessions</p>
-              <h2 className="text-foreground">12</h2>
+              <h2 className="text-foreground">{dashboard?.todaysSessions ?? '--'}</h2>
             </div>
             <Clock className="w-6 h-6 text-secondary" />
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="primary">8 Completed</Badge>
+            <Badge variant="primary">{dashboard?.todaysSessionsCompleted ?? 0} Completed</Badge>
           </div>
         </Card>
       </div>
@@ -110,7 +105,7 @@ export function TrainerDashboard() {
         <Card>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-foreground">Completion Rate</h3>
-            <Badge variant="success">92% Average</Badge>
+            <Badge variant="success">{dashboard?.averageCompletionRate ?? 0}% Average</Badge>
           </div>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={weeklyData}>
@@ -129,7 +124,7 @@ export function TrainerDashboard() {
               <Line
                 key="line-completion"
                 type="monotone"
-                dataKey="completion"
+                dataKey="completionRate"
                 stroke="#c4866b"
                 strokeWidth={3}
                 dot={{ fill: '#c4866b', r: 5 }}
@@ -146,38 +141,20 @@ export function TrainerDashboard() {
           <Badge variant="warning">5 New</Badge>
         </div>
         <div className="space-y-3">
-          <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
-            <Activity className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm text-foreground">Alex completed "Upper Body Strength"</p>
-                <span className="text-xs text-muted-foreground">2 mins ago</span>
+          {dashboardQuery.isLoading && <p className="text-muted-foreground">Loading dashboard...</p>}
+          {dashboardQuery.isError && <p role="alert" className="text-destructive">{dashboardQuery.error.message}</p>}
+          {(dashboard?.recentActivity ?? []).map((item) => (
+            <div key={item.id} className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+              <Activity className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm text-foreground">{item.message}</p>
+                  <span className="text-xs text-muted-foreground">{item.timeLabel}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{item.detail}</p>
               </div>
-              <p className="text-xs text-muted-foreground">Personal best achieved!</p>
             </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
-            <Users className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm text-foreground">3 new trainee requests</p>
-                <span className="text-xs text-muted-foreground">15 mins ago</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Review and accept new members</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
-            <Calendar className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm text-foreground">Michelle scheduled for tomorrow</p>
-                <span className="text-xs text-muted-foreground">1 hour ago</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Morning session at 9:00 AM</p>
-            </div>
-          </div>
+          ))}
         </div>
       </Card>
     </div>

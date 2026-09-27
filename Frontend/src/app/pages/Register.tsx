@@ -3,10 +3,14 @@ import { useNavigate } from 'react-router';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { Dumbbell, User, Mail, Lock, Phone, MapPin, Award } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export function Register() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [userType, setUserType] = React.useState<'trainee' | 'trainer'>('trainee');
+  const [error, setError] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const [formData, setFormData] = React.useState({
     fullName: '',
@@ -24,23 +28,40 @@ export function Register() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+      setError('Passwords do not match.');
       return;
     }
 
     if (formData.password.length < 8) {
-      alert('Password must be at least 8 characters long!');
+      setError('Password must be at least 8 characters long.');
       return;
     }
 
-    if (userType === 'trainer') {
-      navigate('/trainer');
-    } else {
-      navigate('/');
+    setIsSubmitting(true);
+    try {
+      const user = await register({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        location: formData.location,
+        role: userType,
+        ...(userType === 'trainer' && {
+          specialization: formData.specialization,
+          certification: formData.certification,
+          experience: formData.experience,
+        }),
+      });
+      navigate(user.role === 'trainer' ? '/trainer' : '/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to create your account. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -241,8 +262,10 @@ export function Register() {
               </label>
             </div>
 
-            <Button type="submit" variant="primary" className="w-full">
-              Create Account
+            {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+
+            <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating account...' : 'Create Account'}
             </Button>
           </form>
 

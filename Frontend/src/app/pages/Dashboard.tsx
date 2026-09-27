@@ -4,20 +4,19 @@ import { Badge } from '../components/Badge';
 import { ProgressBar } from '../components/ProgressBar';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Calendar, AlertCircle, TrendingUp, Clock } from 'lucide-react';
-
-const workoutData = [
-  { id: 1, day: 'Mon', workouts: 2 },
-  { id: 2, day: 'Tue', workouts: 1 },
-  { id: 3, day: 'Wed', workouts: 3 },
-  { id: 4, day: 'Thu', workouts: 2 },
-  { id: 5, day: 'Fri', workouts: 4 },
-  { id: 6, day: 'Sat', workouts: 1 },
-  { id: 7, day: 'Sun', workouts: 0 },
-];
+import { useAuth } from '../context/AuthContext';
+import { useTraineeProfile } from '../hooks/useTrainees';
+import { useWorkoutActivity } from '../hooks/useWorkouts';
+import { useTraineeNotifications } from '../hooks/useNotifications';
 
 export function Dashboard() {
-  const subscriptionDaysRemaining = 15;
-  const subscriptionTotalDays = 30;
+  const { user } = useAuth();
+  const profileQuery = useTraineeProfile();
+  const activityQuery = useWorkoutActivity();
+  const notificationsQuery = useTraineeNotifications();
+  const profile = profileQuery.data;
+  const workoutData = activityQuery.data ?? [];
+  const notifications = (notificationsQuery.data ?? []).slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -26,7 +25,7 @@ export function Dashboard() {
           <span className="text-2xl">💪</span>
         </div>
         <div>
-          <h1 className="text-foreground">Welcome back, Shishir!</h1>
+          <h1 className="text-foreground">Welcome back, {profile?.fullName ?? user?.fullName ?? 'Trainee'}!</h1>
           <p className="text-muted-foreground">Ready to crush your goals today?</p>
         </div>
       </div>
@@ -36,7 +35,9 @@ export function Dashboard() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="text-foreground mb-1">Subscription Status</h3>
-              <Badge variant="success">Active</Badge>
+              <Badge variant={profile?.subscription.status === 'active' ? 'success' : 'warning'}>
+                {profile?.subscription.status ?? 'Loading'}
+              </Badge>
             </div>
             <Calendar className="w-6 h-6 text-primary" />
           </div>
@@ -44,14 +45,16 @@ export function Dashboard() {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Days Remaining</span>
-              <span className="text-foreground">{subscriptionDaysRemaining} days</span>
+              <span className="text-foreground">{profile?.subscription.daysRemaining ?? '--'} days</span>
             </div>
             <ProgressBar
-              value={subscriptionDaysRemaining}
-              max={subscriptionTotalDays}
+              value={profile?.subscription.daysRemaining ?? 0}
+              max={profile?.subscription.totalDays ?? 1}
             />
             <p className="text-xs text-muted-foreground">
-              Renews on April 16, 2026
+              {profile?.subscription.renewsOn
+                ? `Renews on ${new Date(profile.subscription.renewsOn).toLocaleDateString()}`
+                : 'Subscription details unavailable'}
             </p>
           </div>
         </Card>
@@ -85,19 +88,19 @@ export function Dashboard() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="text-foreground mb-1">Weekly Progress</h3>
-              <p className="text-sm text-muted-foreground">13 workouts completed</p>
+              <p className="text-sm text-muted-foreground">{profile?.stats.totalWorkouts ?? '--'} workouts completed</p>
             </div>
             <TrendingUp className="w-6 h-6 text-primary" />
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Goal: 15 workouts</span>
-              <span className="text-sm text-primary">87%</span>
+              <span className="text-sm text-muted-foreground">Attendance rate</span>
+              <span className="text-sm text-primary">{profile?.stats.attendanceRate ?? 0}%</span>
             </div>
-            <ProgressBar value={13} max={15} />
+            <ProgressBar value={profile?.stats.attendanceRate ?? 0} max={100} />
             <p className="text-xs text-muted-foreground">
-              Keep going! 2 more workouts to reach your goal
+              {profileQuery.isLoading ? 'Loading your progress...' : 'Progress from your training history'}
             </p>
           </div>
         </Card>
@@ -139,42 +142,25 @@ export function Dashboard() {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-foreground">Recent Notifications</h3>
-          <Badge variant="warning">3 New</Badge>
+          <Badge variant="warning">{notifications.filter((notification) => notification.isUnread).length} New</Badge>
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-            <AlertCircle className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm text-foreground">Trainer Absence Alert</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Sarah Johnson will be unavailable on April 5th
-              </p>
+          {notificationsQuery.isLoading && <p className="text-sm text-muted-foreground">Loading notifications...</p>}
+          {notificationsQuery.isError && <p role="alert" className="text-sm text-destructive">{notificationsQuery.error.message}</p>}
+          {notifications.map((notification) => (
+            <div key={notification.id} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+              <AlertCircle className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-foreground">{notification.title}</p>
+                <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+              </div>
+              <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
             </div>
-            <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-          </div>
-
-          <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-            <Activity className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm text-foreground">Workout Reminder</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Your leg day workout starts in 2 hours
-              </p>
-            </div>
-            <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-          </div>
-
-          <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-            <Calendar className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm text-foreground">Subscription Reminder</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Your subscription renews in 15 days
-              </p>
-            </div>
-            <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-          </div>
+          ))}
+          {!notificationsQuery.isLoading && !notificationsQuery.isError && notifications.length === 0 && (
+            <p className="text-sm text-muted-foreground">No recent notifications.</p>
+          )}
         </div>
       </Card>
     </div>

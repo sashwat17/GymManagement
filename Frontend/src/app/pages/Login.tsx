@@ -3,20 +3,29 @@ import { useNavigate } from 'react-router';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { Dumbbell } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [rememberMe, setRememberMe] = React.useState(false);
   const [userType, setUserType] = React.useState<'trainee' | 'trainer'>('trainee');
+  const [error, setError] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (userType === 'trainer') {
-      navigate('/trainer');
-    } else {
-      navigate('/');
+    setError('');
+    setIsSubmitting(true);
+    try {
+      const user = await login({ email, password, role: userType });
+      navigate(user.role === 'trainer' ? '/trainer' : '/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to sign in. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -100,8 +109,10 @@ export function Login() {
               </label>
             </div>
 
-            <Button type="submit" variant="primary" className="w-full">
-              Login
+            {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+
+            <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Signing in...' : 'Login'}
             </Button>
           </form>
 

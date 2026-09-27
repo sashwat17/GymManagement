@@ -3,37 +3,39 @@ import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Calendar, Clock, Dumbbell, User, AlertCircle } from 'lucide-react';
+import { useTraineeOptions } from '../../hooks/useTrainees';
+import { useAssignWorkout, useWorkouts } from '../../hooks/useWorkouts';
+import type { AssignmentDifficulty } from '../../types/workout';
 
 export function WorkoutAssignment() {
   const [selectedTrainee, setSelectedTrainee] = React.useState('');
   const [selectedWorkout, setSelectedWorkout] = React.useState('');
-  const [difficulty, setDifficulty] = React.useState('Medium');
+  const [difficulty, setDifficulty] = React.useState<AssignmentDifficulty>('Medium');
   const [scheduledDate, setScheduledDate] = React.useState('');
   const [scheduledTime, setScheduledTime] = React.useState('');
+  const traineesQuery = useTraineeOptions();
+  const workoutsQuery = useWorkouts();
+  const assignWorkout = useAssignWorkout();
+  const trainees = traineesQuery.data ?? [];
+  const workouts = workoutsQuery.data ?? [];
 
-  const trainees = [
-    { id: '1', name: 'Alex Johnson', level: 'Intermediate' },
-    { id: '2', name: 'Michelle Davis', level: 'Beginner' },
-    { id: '3', name: 'Robert Chen', level: 'Advanced' },
-    { id: '4', name: 'Emily Watson', level: 'Intermediate' },
-    { id: '5', name: 'David Park', level: 'Beginner' },
-  ];
-
-  const workouts = [
-    { id: '1', name: 'Upper Body Strength', duration: '45 mins', type: 'Strength' },
-    { id: '2', name: 'HIIT Cardio Blast', duration: '30 mins', type: 'Cardio' },
-    { id: '3', name: 'Core & Abs Burner', duration: '20 mins', type: 'Core' },
-    { id: '4', name: 'Full Body Circuit', duration: '60 mins', type: 'Full Body' },
-    { id: '5', name: 'Leg Day Power', duration: '50 mins', type: 'Strength' },
-    { id: '6', name: 'Yoga Flow', duration: '40 mins', type: 'Flexibility' },
-  ];
-
-  const handleAssign = () => {
+  const handleAssign = async () => {
     if (!selectedTrainee || !selectedWorkout) {
       alert('Please select both a trainee and a workout');
       return;
     }
-    alert('Workout assigned successfully!');
+    try {
+      await assignWorkout.mutateAsync({
+        traineeId: selectedTrainee,
+        workoutId: selectedWorkout,
+        difficulty,
+        ...(scheduledDate && { scheduledDate }),
+        ...(scheduledTime && { scheduledTime }),
+      });
+      alert('Workout assigned successfully!');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to assign workout.');
+    }
   };
 
   return (
@@ -52,6 +54,8 @@ export function WorkoutAssignment() {
             </div>
 
             <div className="space-y-3">
+              {traineesQuery.isLoading && <p className="text-muted-foreground">Loading trainees...</p>}
+              {traineesQuery.isError && <p role="alert" className="text-destructive">{traineesQuery.error.message}</p>}
               {trainees.map((trainee) => (
                 <button
                   key={trainee.id}
@@ -86,6 +90,8 @@ export function WorkoutAssignment() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {workoutsQuery.isLoading && <p className="text-muted-foreground">Loading workouts...</p>}
+              {workoutsQuery.isError && <p role="alert" className="text-destructive">{workoutsQuery.error.message}</p>}
               {workouts.map((workout) => (
                 <button
                   key={workout.id}
@@ -105,7 +111,7 @@ export function WorkoutAssignment() {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      <span>{workout.duration}</span>
+                      <span>{workout.durationMinutes} mins</span>
                     </div>
                     <Badge variant="primary">{workout.type}</Badge>
                   </div>
@@ -152,7 +158,7 @@ export function WorkoutAssignment() {
               <div>
                 <label className="block text-sm text-muted-foreground mb-2">Difficulty Level</label>
                 <div className="flex gap-2">
-                  {['Easy', 'Medium', 'Hard'].map((level) => (
+                  {(['Easy', 'Medium', 'Hard'] as const).map((level) => (
                     <button
                       key={level}
                       onClick={() => setDifficulty(level)}
@@ -216,9 +222,11 @@ export function WorkoutAssignment() {
               variant="primary"
               className="w-full"
               onClick={handleAssign}
+              disabled={assignWorkout.isPending || !selectedTrainee || !selectedWorkout}
             >
-              Assign Workout
+              {assignWorkout.isPending ? 'Assigning...' : 'Assign Workout'}
             </Button>
+            {assignWorkout.isError && <p role="alert" className="mt-3 text-sm text-destructive">{assignWorkout.error.message}</p>}
           </Card>
         </div>
       </div>

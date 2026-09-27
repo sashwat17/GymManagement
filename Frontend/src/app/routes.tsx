@@ -13,6 +13,7 @@ import { WorkoutAssignment } from "./pages/trainer/WorkoutAssignment";
 import { WorkoutManagement } from "./pages/trainer/WorkoutManagement";
 import { TrainerProfile } from "./pages/trainer/TrainerProfile";
 import { TrainerNotifications } from "./pages/trainer/TrainerNotifications";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
@@ -25,24 +26,34 @@ export const router = createBrowserRouter([
   },
   {
     path: "/",
-    Component: Layout,
+    Component: () => <ProtectedRoute allowedRole="trainee" />,
     children: [
-      { index: true, Component: Dashboard },
-      { path: "workouts", Component: Workouts },
-      { path: "profile", Component: Profile },
-      { path: "notifications", Component: Notifications },
+      {
+        Component: Layout,
+        children: [
+          { index: true, Component: Dashboard },
+          { path: "workouts", Component: Workouts },
+          { path: "profile", Component: Profile },
+          { path: "notifications", Component: Notifications },
+        ],
+      },
     ],
   },
   {
     path: "/trainer",
-    Component: TrainerLayout,
+    Component: () => <ProtectedRoute allowedRole="trainer" />,
     children: [
-      { index: true, Component: TrainerDashboard },
-      { path: "trainees", Component: TraineeManagement },
-      { path: "assign", Component: WorkoutAssignment },
-      { path: "workouts", Component: WorkoutManagement },
-      { path: "profile", Component: TrainerProfile },
-      { path: "notifications", Component: TrainerNotifications },
+      {
+        Component: TrainerLayout,
+        children: [
+          { index: true, Component: TrainerDashboard },
+          { path: "trainees", Component: TraineeManagement },
+          { path: "assign", Component: WorkoutAssignment },
+          { path: "workouts", Component: WorkoutManagement },
+          { path: "profile", Component: TrainerProfile },
+          { path: "notifications", Component: TrainerNotifications },
+        ],
+      },
     ],
   },
 ]);
