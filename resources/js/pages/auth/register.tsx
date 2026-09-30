@@ -9,9 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
-interface RegisterForm {
+interface RegisterForm extends Record<string, string> {
     name: string;
     email: string;
+    role: string;
+    phone: string;
+    location: string;
+    specialization: string;
+    certification: string;
+    experience_years: string;
     password: string;
     password_confirmation: string;
 }
@@ -20,6 +26,12 @@ export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm<RegisterForm>({
         name: '',
         email: '',
+        role: 'trainee',
+        phone: '',
+        location: '',
+        specialization: '',
+        certification: '',
+        experience_years: '',
         password: '',
         password_confirmation: '',
     });
@@ -32,10 +44,25 @@ export default function Register() {
     };
 
     return (
-        <AuthLayout title="Create an account" description="Enter your details below to create your account">
+        <AuthLayout title="Create your account" description="Create an account and make room for your well-being">
             <Head title="Register" />
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
+                    <div className="grid gap-2">
+                        <Label htmlFor="role">I want to join as a</Label>
+                        <select
+                            id="role"
+                            value={data.role}
+                            onChange={(e) => setData('role', e.target.value)}
+                            disabled={processing}
+                            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <option value="trainee">Trainee</option>
+                            <option value="trainer">Trainer</option>
+                        </select>
+                        <InputError message={errors.role} />
+                    </div>
+
                     <div className="grid gap-2">
                         <Label htmlFor="name">Name</Label>
                         <Input
@@ -68,6 +95,78 @@ export default function Register() {
                         />
                         <InputError message={errors.email} />
                     </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="phone">Phone number <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                        <Input
+                            id="phone"
+                            type="tel"
+                            autoComplete="tel"
+                            value={data.phone}
+                            onChange={(e) => setData('phone', e.target.value)}
+                            disabled={processing}
+                            placeholder="Your phone number"
+                        />
+                        <InputError message={errors.phone} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="location">Location <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                        <Input
+                            id="location"
+                            type="text"
+                            autoComplete="address-level2"
+                            value={data.location}
+                            onChange={(e) => setData('location', e.target.value)}
+                            disabled={processing}
+                            placeholder="City or neighborhood"
+                        />
+                        <InputError message={errors.location} />
+                    </div>
+
+                    {data.role === 'trainer' && (
+                        <>
+                            <div className="grid gap-2">
+                                <Label htmlFor="specialization">Specialization</Label>
+                                <Input
+                                    id="specialization"
+                                    required
+                                    value={data.specialization}
+                                    onChange={(e) => setData('specialization', e.target.value)}
+                                    disabled={processing}
+                                    placeholder="e.g. Strength and conditioning"
+                                />
+                                <InputError message={errors.specialization} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="certification">Certification <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                                <Input
+                                    id="certification"
+                                    value={data.certification}
+                                    onChange={(e) => setData('certification', e.target.value)}
+                                    disabled={processing}
+                                    placeholder="e.g. Certified personal trainer"
+                                />
+                                <InputError message={errors.certification} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="experience_years">Years of experience <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                                <Input
+                                    id="experience_years"
+                                    type="number"
+                                    min="0"
+                                    max="60"
+                                    value={data.experience_years}
+                                    onChange={(e) => setData('experience_years', e.target.value)}
+                                    disabled={processing}
+                                    placeholder="Years"
+                                />
+                                <InputError message={errors.experience_years} />
+                            </div>
+                        </>
+                    )}
 
                     <div className="grid gap-2">
                         <Label htmlFor="password">Password</Label>

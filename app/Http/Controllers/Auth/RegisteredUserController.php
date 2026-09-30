@@ -9,7 +9,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,20 +28,34 @@ class RegisteredUserController extends Controller
     /**
      * Handle an incoming registration request.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['sometimes', 'required', Rule::in(['trainee', 'trainer'])],
+            'phone' => ['nullable', 'string', 'max:40'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'specialization' => ['nullable', 'required_if:role,trainer', 'string', 'max:255'],
+            'certification' => ['nullable', 'string', 'max:255'],
+            'experience_years' => ['nullable', 'integer', 'between:0,60'],
         ]);
 
+        $role = $validated['role'] ?? 'trainee';
+
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $role,
+            'phone' => $validated['phone'] ?? null,
+            'location' => $validated['location'] ?? null,
+            'specialization' => $role === 'trainer' ? ($validated['specialization'] ?? null) : null,
+            'certification' => $role === 'trainer' ? ($validated['certification'] ?? null) : null,
+            'experience_years' => $role === 'trainer' ? ($validated['experience_years'] ?? null) : null,
         ]);
 
         event(new Registered($user));
